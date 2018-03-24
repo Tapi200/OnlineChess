@@ -13,19 +13,10 @@ namespace OnlineChess
         public int MyProperty { get; set; }
     }
 
-    class Program
+    public class CreateGame
     {
-        static void Main(string[] args)
+        public void CreatePlayer(GameObject[] player, int N)
         {
-            //Console.WriteLine("Enter T");
-            //T = Convert.ToInt32(Console.ReadLine());
-            //Console.WriteLine("Enter N");
-            //N = Convert.ToInt32(Console.ReadLine());
-            //int T = 1;
-            int N = 2;
-
-            GameObject[] player = new GameObject[N];
-            
             for (int i = 0; i < N; i++)
             {
                 player[i] = new GameObject();
@@ -42,13 +33,103 @@ namespace OnlineChess
                 player[i].IsRated = inputArray[4];
                 player[i].Color = inputArray[5];
             }
+        }
 
-            Console.WriteLine(player[1].R);
+        private bool MatchColor(int i, int j, GameObject[] player)
+        {
+            if (player[i].Color == "random" && player[j].Color == "random" || 
+                player[i].Color == "white" && player[j].Color == "black" || 
+                player[i].Color == "black" && player[j].Color == "white")
+                return true;
+            return false;
+        }
 
+        public bool MatchExist(int i, int j, GameObject[] player)
+        {
+            if (player[i].R >= player[j].Min
+                && player[i].R <= player[j].Max
+                && player[i].IsRated == player[j].IsRated
+                && player[i].Time == player[j].Time 
+                && MatchColor(i, j, player))
+                return true;
+             return false;
+        }
 
+        public bool IsElementInOutput(string[] output, int j)
+        {
+            foreach (var e in output)
+            {
+                if (Convert.ToString(j + 1) == e)
+                    return true;
+            }
+            return false;
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Enter T");
+            int T = Convert.ToInt32(Console.ReadLine());
+            while (T > 0)
+            {
+                Console.WriteLine("Enter N");
+                int N = Convert.ToInt32(Console.ReadLine());
+                //int N = 7;
+                var player = new GameObject[N];
+                var game = new CreateGame();
+
+                game.CreatePlayer(player, N);
+
+                var output = new string[N];
+
+                output[0] = "wait";
+
+                for (int i = 1; i < N; i++)
+                {
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (game.MatchExist(i, j, player))
+                        {
+                            if (!game.IsElementInOutput(output, j))
+                            {
+                                output[i] = (j + 1).ToString();
+                                break;
+                            }
+                        }
+                        output[i] = "wait";
+                    }
+                }
+
+                foreach (var item in output)
+                    Console.WriteLine(item);
+                T--;
+            }
         }
     }
 }
 
 
+//Example
+//Input:
+//1
+//7
+//5 1 10 15 rated random
+//11 1 20 15 rated random
+//10 3 30 15 rated random
+//2 5 15 15 rated random
+//30 20 60 60 unrated white
+//50 20 40 60 unrated random
+//50 20 40 60 unrated black
+//25 20 40 15 rated random
+//50 20 40 60 unrated black
 
+//Output:
+//wait
+//wait
+//1
+//2
+//wait
+//wait
+//5
